@@ -6,13 +6,13 @@ import java.util.List;
 
 public class HomeSolution implements IHomeSolution {
     
-    // Datos
-    private HashMap<Integer, Empleado> empleados; // clave = numLegajo
-    private HashMap<Integer, Proyecto> proyectos; // clave = numID
-    private int contadorLegajos;
+    //DATOS
+    private HashMap<Integer, Empleado> empleados; //clave = numLegajo
+    private HashMap<Integer, Proyecto> proyectos; //clave = numID
+    private int contadorLegajos;	//para que los legajos y proyectos sean unicos
     private int contadorProyectos;
     
-    // Constructor
+    //CONSTRUCTOR
     public HomeSolution() {
         this.empleados = new HashMap<>();
         this.proyectos = new HashMap<>();
@@ -20,30 +20,10 @@ public class HomeSolution implements IHomeSolution {
         this.contadorProyectos = 1;
     }
     
-    // ============================================================
-    // REGISTRO DE EMPLEADOS
-    // ============================================================
     
-    @Override
-    public void registrarEmpleado(String nombre, double valor) throws IllegalArgumentException {
-        validarDatosEmpleado(nombre, valor);
-        
-        int nuevoLegajo = generarNuevoLegajo();
-        EmpleadoContratado empleado = new EmpleadoContratado(nombre, nuevoLegajo, valor);
-        this.empleados.put(nuevoLegajo, empleado);
-    }
-    
-    @Override
-    public void registrarEmpleado(String nombre, double valor, String categoria) throws IllegalArgumentException {
-        validarDatosEmpleado(nombre, valor);
-        validarCategoria(categoria);
-        
-        int nuevoLegajo = generarNuevoLegajo();
-        EmpleadoDePlanta empleado = new EmpleadoDePlanta(nombre, nuevoLegajo, valor, categoria);
-        this.empleados.put(nuevoLegajo, empleado);
-    }
-    
-    private void validarDatosEmpleado(String nombre, double valor) {
+    // ------------------------------ REGISTRO DE EMPLEADOS ------------------------------
+
+    private void validarDatosEmpleado(String nombre, double valor) {	//valida que nombre no sea vacio y valor > 0
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del empleado no puede ser nulo o vacío");
         }
@@ -52,7 +32,20 @@ public class HomeSolution implements IHomeSolution {
         }
     }
     
-    private void validarCategoria(String categoria) {
+    private int generarNuevoLegajo() {
+        return this.contadorLegajos++;
+    }
+    
+    @Override
+    public void registrarEmpleado(String nombre, double valor) throws IllegalArgumentException {
+        validarDatosEmpleado(nombre, valor);
+        
+        int nuevoLegajo = generarNuevoLegajo();
+        EmpleadoContratado empleado = new EmpleadoContratado(nombre, nuevoLegajo, valor);	//crea empleadoContratado con legajo unico
+        this.empleados.put(nuevoLegajo, empleado);	//lo agrega a empleados
+    }
+    
+    private void validarCategoria(String categoria) {	//verifica que la categoria puesta sea INICIAL, TECNICO o EXPERTO o que no sea nula
         if (categoria == null) {
             throw new IllegalArgumentException("La categoría no puede ser nula");
         }
@@ -61,13 +54,53 @@ public class HomeSolution implements IHomeSolution {
         }
     }
     
-    private int generarNuevoLegajo() {
-        return this.contadorLegajos++;
+    @Override
+    public void registrarEmpleado(String nombre, double valor, String categoria) throws IllegalArgumentException {
+        validarDatosEmpleado(nombre, valor);
+        validarCategoria(categoria);
+        
+        int nuevoLegajo = generarNuevoLegajo();
+        EmpleadoDePlanta empleado = new EmpleadoDePlanta(nombre, nuevoLegajo, valor, categoria);	//crea empleadoDePlanta con legajo unico
+        this.empleados.put(nuevoLegajo, empleado);	//lo agrega a empleados
     }
+
     
-    // ============================================================
-    // REGISTRO Y GESTIÓN DE PROYECTOS
-    // ============================================================
+    // ------------------------------ REGISTRO Y GESTION DE PROYECTOS ------------------------------
+    
+    
+    private void validarDatosProyecto(String[] titulos, String[] descripcion, double[] dias,
+            String domicilio, String[] cliente, String inicio, String fin) {	//valida todos los datos que se pongan al crear un proyecto
+    	
+			if (titulos == null || titulos.length == 0) {
+				throw new IllegalArgumentException("Debe haber al menos una tarea");
+			}
+			if (descripcion == null || dias == null) {
+				throw new IllegalArgumentException("Los arrays no pueden ser nulos");
+			}
+			if (domicilio == null || domicilio.trim().isEmpty()) {
+				throw new IllegalArgumentException("El domicilio no puede ser nulo o vacío");
+			}
+			if (cliente == null || cliente.length != 3) {
+				throw new IllegalArgumentException("Los datos del cliente son inválidos");
+			}
+			if (inicio == null || fin == null) {
+				throw new IllegalArgumentException("Las fechas no pueden ser nulas");
+			}
+			if (fin.compareTo(inicio) < 0) {
+				throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio");
+			}
+
+			//valida que todos los días sean positivos
+			for (double dia : dias) {
+				if (dia <= 0) {
+					throw new IllegalArgumentException("Los días deben ser mayores a 0");
+				}
+			}
+	}
+    
+    private int generarNuevoNumProyecto() {
+        return this.contadorProyectos++;
+    }
     
     @Override
     public void registrarProyecto(String[] titulos, String[] descripcion, double[] dias,
@@ -77,8 +110,8 @@ public class HomeSolution implements IHomeSolution {
         validarDatosProyecto(titulos, descripcion, dias, domicilio, cliente, inicio, fin);
         
         int nuevoNumID = generarNuevoNumProyecto();
-        Cliente nuevoCliente = new Cliente(cliente[0], cliente[1], cliente[2]);
-        Proyecto proyecto = new Proyecto(nuevoNumID, domicilio, nuevoCliente, inicio, fin);
+        Cliente nuevoCliente = new Cliente(cliente[0], cliente[1], cliente[2]);	//se pasa el nombre, email y telefono como se ve en Main.java
+        Proyecto proyecto = new Proyecto(nuevoNumID, domicilio, nuevoCliente, inicio, fin);	//crea el proyecto
         
         // Agregar las tareas al proyecto
         for (int i = 0; i < titulos.length; i++) {
@@ -86,48 +119,10 @@ public class HomeSolution implements IHomeSolution {
             proyecto.agregarTarea(tarea);
         }
         
-        this.proyectos.put(nuevoNumID, proyecto);
+        this.proyectos.put(nuevoNumID, proyecto);	//suma el proyecto
     }
     
-    private void validarDatosProyecto(String[] titulos, String[] descripcion, double[] dias,
-                                     String domicilio, String[] cliente, String inicio, String fin) {
-        if (titulos == null || titulos.length == 0) {
-            throw new IllegalArgumentException("Debe haber al menos una tarea");
-        }
-        if (descripcion == null || dias == null) {
-            throw new IllegalArgumentException("Los arrays no pueden ser nulos");
-        }
-        if (titulos.length != descripcion.length || titulos.length != dias.length) {
-            throw new IllegalArgumentException("Los arrays deben tener la misma longitud");
-        }
-        if (domicilio == null || domicilio.trim().isEmpty()) {
-            throw new IllegalArgumentException("El domicilio no puede ser nulo o vacío");
-        }
-        if (cliente == null || cliente.length != 3) {
-            throw new IllegalArgumentException("Los datos del cliente son inválidos");
-        }
-        if (inicio == null || fin == null) {
-            throw new IllegalArgumentException("Las fechas no pueden ser nulas");
-        }
-        if (fin.compareTo(inicio) < 0) {
-            throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio");
-        }
-        
-        // Validar que todos los días sean positivos
-        for (double dia : dias) {
-            if (dia <= 0) {
-                throw new IllegalArgumentException("Los días deben ser mayores a 0");
-            }
-        }
-    }
-    
-    private int generarNuevoNumProyecto() {
-        return this.contadorProyectos++;
-    }
-    
-    // ============================================================
-    // ASIGNACIÓN Y GESTIÓN DE TAREAS
-    // ============================================================
+    // ------------------------------ ASIGNACION Y GESTION DE TAREAS ------------------------------ 
     
     @Override
     public void asignarResponsableEnTarea(Integer numero, String titulo) throws Exception {
@@ -136,19 +131,19 @@ public class HomeSolution implements IHomeSolution {
         
         Tarea tarea = proyecto.getTarea(titulo);
         verificarTareaExiste(tarea, titulo);
-        verificarTareaNoAsignada(tarea);
+        verificarTareaNoAsignada(tarea);	//ve si tiene empleado
         
         Empleado empleadoDisponible = buscarPrimerEmpleadoDisponible();
-        if (empleadoDisponible == null) {
+        if (empleadoDisponible == null) {	//si no hay empleados disponibles
             proyecto.setEstado(Estado.pendiente);
             throw new Exception("No hay empleados disponibles");
         }
         
-        // Asignar empleado
+        //si lo encontro, asigna empleado
         empleadoDisponible.cambiarANoDisponible();
-        proyecto.asignarEmpleadoATarea(tarea, empleadoDisponible);
+        proyecto.asignarEmpleadoATarea(tarea, empleadoDisponible);	//lo termina de asignar
         
-        // Si todas las tareas están asignadas, cambiar estado a ACTIVO
+        //si todas las tareas estan asignadas, cambiar estado a ACTIVO
         if (proyecto.getTareasNoAsignadas().length == 0) {
             proyecto.setEstado(Estado.activo);
         }
@@ -161,19 +156,19 @@ public class HomeSolution implements IHomeSolution {
         
         Tarea tarea = proyecto.getTarea(titulo);
         verificarTareaExiste(tarea, titulo);
-        verificarTareaNoAsignada(tarea);
+        verificarTareaNoAsignada(tarea);	//ve si tiene empleado
         
         Empleado empleadoMenosRetrasos = buscarEmpleadoConMenosRetrasos();
-        if (empleadoMenosRetrasos == null) {
+        if (empleadoMenosRetrasos == null) {	//si no hay empleados disponibles
             proyecto.setEstado(Estado.pendiente);
             throw new Exception("No hay empleados disponibles");
         }
         
-        // Asignar empleado
+        //si encontro, asigna empleado
         empleadoMenosRetrasos.cambiarANoDisponible();
         proyecto.asignarEmpleadoATarea(tarea, empleadoMenosRetrasos);
         
-        // Si todas las tareas están asignadas, cambiar estado a ACTIVO
+        //si todas las tareas estan asignadas, cambiar estado a ACTIVO
         if (proyecto.getTareasNoAsignadas().length == 0) {
             proyecto.setEstado(Estado.activo);
         }
@@ -182,14 +177,14 @@ public class HomeSolution implements IHomeSolution {
     @Override
     public void registrarRetrasoEnTarea(Integer numero, String titulo, double cantidadDias)
             throws IllegalArgumentException {
-        Proyecto proyecto = obtenerProyecto(numero);
+        Proyecto proyecto = obtenerProyecto(numero);	//obtiene proyecto por numID
         
         if (cantidadDias <= 0) {
             throw new IllegalArgumentException("La cantidad de días debe ser mayor a 0");
         }
         
         Tarea tarea = proyecto.getTarea(titulo);
-        verificarTareaExiste(tarea, titulo);
+        verificarTareaExiste(tarea, titulo);	//verifica que exista
         
         proyecto.registrarRetraso(tarea, cantidadDias);
     }
@@ -197,8 +192,8 @@ public class HomeSolution implements IHomeSolution {
     @Override
     public void agregarTareaEnProyecto(Integer numero, String titulo, String descripcion, double dias)
             throws IllegalArgumentException {
-        Proyecto proyecto = obtenerProyecto(numero);
-        verificarProyectoNoFinalizado(proyecto);
+        Proyecto proyecto = obtenerProyecto(numero);	//obtiene proyecto por numID
+        verificarProyectoNoFinalizado(proyecto);	//verifica si no termino
         
         if (titulo == null || titulo.trim().isEmpty()) {
             throw new IllegalArgumentException("El título no puede ser nulo o vacío");
@@ -208,21 +203,21 @@ public class HomeSolution implements IHomeSolution {
         }
         
         Tarea nuevaTarea = new Tarea(titulo, descripcion, dias);
-        proyecto.agregarTarea(nuevaTarea);
+        proyecto.agregarTarea(nuevaTarea);	//la agrega al proyecto
     }
     
     @Override
     public void finalizarTarea(Integer numero, String titulo) throws Exception {
-        Proyecto proyecto = obtenerProyecto(numero);
+        Proyecto proyecto = obtenerProyecto(numero);	//obtiene proyecto por numID
         
         Tarea tarea = proyecto.getTarea(titulo);
-        verificarTareaExiste(tarea, titulo);
+        verificarTareaExiste(tarea, titulo);	//verificar si la tarea existe
         
-        if (tarea.getEstado().equals(Estado.finalizado)) {
+        if (tarea.getEstado().equals(Estado.finalizado)) {	//verifica si la tarea ya fue finalizada
             throw new Exception("La tarea ya está finalizada");
         }
         
-        // Liberar al empleado
+        //libera al empleado
         Empleado responsable = tarea.getResponsable();
         if (responsable != null) {
             responsable.cambiarADisponible();
@@ -233,44 +228,41 @@ public class HomeSolution implements IHomeSolution {
     
     @Override
     public void finalizarProyecto(Integer numero, String fin) throws IllegalArgumentException {
-        Proyecto proyecto = obtenerProyecto(numero);
+        Proyecto proyecto = obtenerProyecto(numero);	//obtiene proyecto por numID
         
         if (fin == null || fin.trim().isEmpty()) {
             throw new IllegalArgumentException("La fecha de finalización no puede ser nula");
         }
         
-        // Validar que la fecha de fin sea posterior o igual a la fecha de inicio
-        // Y NO anterior a la fecha estimada de fin (si finaliza antes sería incorrecto)
+        //valida que la fechaRealfin sea posterior o igual a la fechaInicio
         if (fin.compareTo(proyecto.getFechaInicio().toString()) < 0) {
             throw new IllegalArgumentException("La fecha de finalización no puede ser anterior a la fecha de inicio");
         }
         
         if (proyecto.getEstado().equals(Estado.pendiente)) {
-            throw new IllegalArgumentException("No se puede finalizar un proyecto pendiente (sin empleados asignados)");
+            throw new IllegalArgumentException("No se puede finalizar un proyecto pendiente");
         }
         
-        // Liberar todos los empleados asignados a tareas del proyecto
+        //libera todos los empleados asignados a tareas del proyecto
         for (Object obj : proyecto.getTareas()) {
             Tarea t = (Tarea) obj;
             if (t.getResponsable() != null) {
                 t.getResponsable().cambiarADisponible();
-                // Finalizar la tarea si no estaba finalizada
-                if (!t.getEstado().equals(Estado.finalizado)) {
+                if (!t.getEstado().equals(Estado.finalizado)) {	//finaliza la tarea si no esta finalizada
                     t.finalizarTarea();
                 }
             }
         }
         
-        proyecto.finalizarProyecto(fin);
+        proyecto.finalizarProyecto(fin);	//cambia a finalizado guarda la fecha, guarda la fechaRealFin y calcula el costoFinal
     }
     
-    // ============================================================
-    // REASIGNACIÓN DE EMPLEADOS
-    // ============================================================
+    
+    // ------------------------------ REASIGNACION DE EMPLEADOS ------------------------------ 
     
     @Override
     public void reasignarEmpleadoEnProyecto(Integer numero, Integer legajo, String titulo) throws Exception {
-        Proyecto proyecto = obtenerProyecto(numero);
+        Proyecto proyecto = obtenerProyecto(numero);	//obtiene proyecto por numID
         
         Tarea tarea = proyecto.getTarea(titulo);
         verificarTareaExiste(tarea, titulo);
@@ -287,18 +279,18 @@ public class HomeSolution implements IHomeSolution {
             throw new Exception("El empleado no está disponible");
         }
         
-        // Liberar empleado anterior
+        //libera empleado anterior
         Empleado empleadoAnterior = tarea.quitarResponsable();
         empleadoAnterior.cambiarADisponible();
         
-        // Asignar nuevo empleado
+        //asigna nuevo empleado
         nuevoEmpleado.cambiarANoDisponible();
         proyecto.asignarEmpleadoATarea(tarea, nuevoEmpleado);
     }
     
     @Override
     public void reasignarEmpleadoConMenosRetraso(Integer numero, String titulo) throws Exception {
-        Proyecto proyecto = obtenerProyecto(numero);
+        Proyecto proyecto = obtenerProyecto(numero);	//obtiene proyecto por numID
         
         Tarea tarea = proyecto.getTarea(titulo);
         verificarTareaExiste(tarea, titulo);
@@ -312,30 +304,28 @@ public class HomeSolution implements IHomeSolution {
             throw new Exception("No hay empleados disponibles");
         }
         
-        // Liberar empleado anterior
+        //libera empleado anterior
         Empleado empleadoAnterior = tarea.quitarResponsable();
         empleadoAnterior.cambiarADisponible();
         
-        // Asignar nuevo empleado
+        //asigna nuevo empleado
         empleadoMenosRetrasos.cambiarANoDisponible();
         proyecto.asignarEmpleadoATarea(tarea, empleadoMenosRetrasos);
     }
     
-    // ============================================================
-    // CONSULTAS Y REPORTES
-    // ============================================================
+    // ------------------------------ CONSULTAS Y REPORTES ------------------------------ 
     
     @Override
-    public double costoProyecto(Integer numero) {
+    public double costoProyecto(Integer numero) {	//calcula el costo  del proyecto
         Proyecto proyecto = obtenerProyecto(numero);
         return proyecto.getCostoFinal();
     }
     
     @Override
     public List<Tupla<Integer, String>> proyectosFinalizados() {
-        List<Tupla<Integer, String>> finalizados = new ArrayList<>();
+        List<Tupla<Integer, String>> finalizados = new ArrayList<>();	//crea lista de Tupla
         
-        for (Proyecto p : this.proyectos.values()) {
+        for (Proyecto p : this.proyectos.values()) {	//recorre y pregunta los estados de los proyectos para añadirlo o no
             if (p.estaFinalizado()) {
                 finalizados.add(new Tupla<>(p.getNumID(), p.getDomicilio()));
             }
@@ -346,9 +336,9 @@ public class HomeSolution implements IHomeSolution {
     
     @Override
     public List<Tupla<Integer, String>> proyectosPendientes() {
-        List<Tupla<Integer, String>> pendientes = new ArrayList<>();
+        List<Tupla<Integer, String>> pendientes = new ArrayList<>();	//crea lista de Tupla
         
-        for (Proyecto p : this.proyectos.values()) {
+        for (Proyecto p : this.proyectos.values()) {	//recorre y pregunta los estados de los proyectos para añadirlo o no
             if (p.getEstado().equals(Estado.pendiente)) {
                 pendientes.add(new Tupla<>(p.getNumID(), p.getDomicilio()));
             }
@@ -359,9 +349,9 @@ public class HomeSolution implements IHomeSolution {
     
     @Override
     public List<Tupla<Integer, String>> proyectosActivos() {
-        List<Tupla<Integer, String>> activos = new ArrayList<>();
+        List<Tupla<Integer, String>> activos = new ArrayList<>();	//crea lista de Tupla
         
-        for (Proyecto p : this.proyectos.values()) {
+        for (Proyecto p : this.proyectos.values()) {	//recorre y pregunta los estados de los proyectos para añadirlo o no
             if (p.getEstado().equals(Estado.activo)) {
                 activos.add(new Tupla<>(p.getNumID(), p.getDomicilio()));
             }
@@ -371,7 +361,7 @@ public class HomeSolution implements IHomeSolution {
     }
     
     @Override
-    public Object[] empleadosNoAsignados() {
+    public Object[] empleadosNoAsignados() {	//recorre empleados y devuelve los que estan disponibles
         List<Integer> noAsignados = new ArrayList<>();
         
         for (Empleado e : this.empleados.values()) {
@@ -384,22 +374,22 @@ public class HomeSolution implements IHomeSolution {
     }
     
     @Override
-    public boolean estaFinalizado(Integer numero) {
+    public boolean estaFinalizado(Integer numero) {	//devuelve el estado del proyecto
         Proyecto proyecto = obtenerProyecto(numero);
         return proyecto.estaFinalizado();
     }
     
     @Override
-    public int consultarCantidadRetrasosEmpleado(Integer legajo) {
+    public int consultarCantidadRetrasosEmpleado(Integer legajo) {	//devuelve los retrasos que tuvo un empleado
         Empleado empleado = this.empleados.get(legajo);
         if (empleado == null) {
-            return 0;
+        	throw new IllegalArgumentException("Empleado no puede ser null");
         }
         return empleado.getCantRetrasos();
     }
     
     @Override
-    public List<Tupla<Integer, String>> empleadosAsignadosAProyecto(Integer numero) {
+    public List<Tupla<Integer, String>> empleadosAsignadosAProyecto(Integer numero) {	//devuelve la lista de los empleados asignados a un proyecto
         Proyecto proyecto = obtenerProyecto(numero);
         List<Tupla<Integer, String>> empleadosAsignados = new ArrayList<>();
         
@@ -410,9 +400,8 @@ public class HomeSolution implements IHomeSolution {
         return empleadosAsignados;
     }
     
-    // ============================================================
-    // NUEVOS REQUERIMIENTOS
-    // ============================================================
+    
+    // ------------------------------ NUEVOS REQUERIMIENTOS ------------------------------ 
     
     @Override
     public Object[] tareasProyectoNoAsignadas(Integer numero) {
@@ -448,7 +437,7 @@ public class HomeSolution implements IHomeSolution {
     }
     
     @Override
-    public List<Tupla<Integer, String>> empleados() {
+    public List<Tupla<Integer, String>> empleados() {	//devuelve lista de empleados
         List<Tupla<Integer, String>> listaEmpleados = new ArrayList<>();
         
         for (Empleado e : this.empleados.values()) {
@@ -459,18 +448,16 @@ public class HomeSolution implements IHomeSolution {
     }
     
     @Override
-    public String consultarProyecto(Integer numero) {
+    public String consultarProyecto(Integer numero) {	//devuelve el toString del proyecto con sus datos
         Proyecto proyecto = obtenerProyecto(numero);
         return proyecto.toString();
     }
     
-    // ============================================================
-    // MÉTODOS AUXILIARES PRIVADOS
-    // ============================================================
+    // ------------------------------ METODOS AUXILIARES ------------------------------ 
     
     private Proyecto obtenerProyecto(Integer numero) {
-        Proyecto proyecto = this.proyectos.get(numero);
-        if (proyecto == null) {
+        Proyecto proyecto = this.proyectos.get(numero);	//obtiene proyecto por id
+        if (proyecto == null) {	//verifica que exista
             throw new IllegalArgumentException("El proyecto con número " + numero + " no existe");
         }
         return proyecto;
@@ -507,21 +494,20 @@ public class HomeSolution implements IHomeSolution {
         Empleado empleadoSeleccionado = null;
         int menorCantidadRetrasos = Integer.MAX_VALUE;
         
-        // Primero buscar empleados sin retrasos
+        //primero busca empleados sin retrasos
         for (Empleado e : this.empleados.values()) {
             if (e.estaDisponible() && e.getCantRetrasos() == 0) {
                 return e;
             }
         }
         
-        // Si no hay sin retrasos, buscar el que menos tenga
+        //si no hay sin retrasos, busca el que menos tenga
         for (Empleado e : this.empleados.values()) {
             if (e.estaDisponible() && e.getCantRetrasos() < menorCantidadRetrasos) {
                 empleadoSeleccionado = e;
                 menorCantidadRetrasos = e.getCantRetrasos();
             }
         }
-        
         return empleadoSeleccionado;
     }
 }

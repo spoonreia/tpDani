@@ -1,19 +1,19 @@
 package entidades;
 
 public class Cliente {
-	//datos
+	//DATOS
 	private String nombre;
 	private String email;
 	private String telefono;
 	
-	//constructor
+	//CONSTRUCTOR
 	public Cliente(String nombre, String email, String telefono) {
 		this.nombre = nombre;
 		this.email = email;
 		this.telefono = telefono;
 	}
 	
-	//getters para usar en toString()
+	//GETTERS PARA EL toString()
 	public String getNombre() {
 		return nombre;
 	}
@@ -30,5 +30,4 @@ public class Cliente {
 	public String toString() {
 		return "Nombre: " + nombre + " ( email: " + email + ", tel: " + telefono + ")";
 	}
-	
 }

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Proyecto {
-	//datos
+	//DATOS
 	private int numID;
 	private String domicilio;
 	private Cliente cliente;
@@ -29,6 +29,7 @@ public class Proyecto {
 	
 	private double costoFinal;
 	
+	//CONSTRUCTOR
 	public Proyecto(int numID, String domicilio, Cliente cliente, String inicio, String fin) {
 		this.numID = numID;
 		this.domicilio = domicilio;
@@ -46,6 +47,7 @@ public class Proyecto {
 		this.historialEmpleados = new HashSet<Empleado>();
 	}
 	
+    // ------------------------------ SET Y SET  ------------------------------ 
 	public int getNumID() {
         return numID;
     }
@@ -70,20 +72,37 @@ public class Proyecto {
     	return this.tareas.values().toArray();
     }
     
-    public void setEstado(String nuevoEstado) { //cambia el estado del proyecto
+    public void setEstado(String nuevoEstado) { //cambia el estado del proyecto (porque hay 3 estados)
     	this.estado = nuevoEstado;
     }
     
+    public Set<Empleado> getHistorialEmpleados(){	//requisito de IHomeSolution en empleadosAsignadosAProyecto
+    	return this.historialEmpleados;
+    }
+    
+    public Object[] getTareasNoAsignadas() {
+    	List<Tarea> noAsignadas = new ArrayList<>();	//crea una lista temporal
+    	
+    	for(Tarea t : this.tareas.values()) {
+    		if(t.getResponsable() == null) {	//si encuentra una tarea sin responsable la agrega a la lista
+    			noAsignadas.add(t);
+    		}
+    	}
+    	return noAsignadas.toArray();
+    }
+    
+    
+    // ------------------------------ OTROS  ------------------------------ 
     public boolean estaFinalizado() {	//verifica que este finalizado
     	return this.estado.equals(Estado.finalizado);
     }
     
     public void finalizarProyecto(String fechaFin) {
     	this.estado = Estado.finalizado;
-    	this.fechaRealFin = LocalDate.parse(fechaFin, DateTimeFormatter.ISO_LOCAL_DATE);
+    	this.fechaRealFin = LocalDate.parse(fechaFin, DateTimeFormatter.ISO_LOCAL_DATE); //toma la fecha
     	
-    	//recalcula costoFinal
-    	this.costoFinal = this.calcularCostoTotal();	//lo guarda
+    	//recalcula costoFinal y lo guarda
+    	this.costoFinal = this.calcularCostoTotal();
     }
     
     public boolean todasLasTareasFinalizadas() {
@@ -99,17 +118,6 @@ public class Proyecto {
     	return true; //todas finalizadas
     }
     
-    public Object[] getTareasNoAsignadas() {
-    	List<Tarea> noAsignadas = new ArrayList<>();	//crea una lista temporal
-    	
-    	for(Tarea t : this.tareas.values()) {
-    		if(t.getResponsable() == null) {	//si encuentra una tarea sin responsable la agrega a la lista
-    			noAsignadas.add(t);
-    		}
-    	}
-    	return noAsignadas.toArray();
-    }
-    
     public void agregarTarea(Tarea nuevaTarea) {
     	this.tareas.put(nuevaTarea.getTituloID(), nuevaTarea); //agrega tarea al HashMap
     	
@@ -121,22 +129,18 @@ public class Proyecto {
     
     public void asignarEmpleadoATarea(Tarea t, Empleado e) {
     	t.asignarResponsable(e);	//guarda al responsable en la tarea
-    	this.historialEmpleados.add(e);	//agrega a la lista de empleados
+    	this.historialEmpleados.add(e);	//agrega empleado al historial
     }
     
     public void registrarRetraso(Tarea t, double dias) {
-    	t.registrarRetraso(dias);	//agrega 1 dia a la tarea
+    	t.registrarRetraso(dias);	//agrega x dias a la tarea
     	
-    	long redondearDias = (long) Math.ceil(dias);
+    	long redondearDias = (long) Math.ceil(dias); //redondea por si llega a ser 0.5
     	this.fechaRealFin = this.fechaRealFin.plusDays(redondearDias); //agrega los dias a la fechaRealFin
     }
     
-    public Set<Empleado> getHistorialEmpleados(){	//requisito de IHomeSolution
-    	return this.historialEmpleados;
-    }
-    
     public double getCostoFinal() {
-    	//si el proyecto no esta finalizado, calula el costo del momento sin incrementos
+    	//si el proyecto no esta finalizado, calcula el costo del momento sin incrementos
     	if(!this.estaFinalizado()) {
     		return this.calcularCostoTotal();
     	}
@@ -148,16 +152,13 @@ public class Proyecto {
         double costoBase = 0;
         boolean huboRetraso = false;
                   
-        // Primero verificar si hay retrasos en las tareas
+        //suma todas los costos de las tareas
         for(Tarea t : this.tareas.values()) {
-            costoBase += t.calcularCosto(); //POLIMORFISMO usando Empleado.calcularCosto()
-            if(t.huboRetraso()) {
-                huboRetraso = true;
-            }
+            costoBase += t.calcularCosto();
         }
         
-        if (this.estaFinalizado() && this.fechaRealFin.isAfter(this.fechaEstimadaFinInicial)) {
-            huboRetraso = true;
+        if (this.estaFinalizado() && this.fechaRealFin.isAfter(this.fechaEstimadaFinInicial)) { //si no esta finalizado tira error
+            huboRetraso = true;	//vuelve a comprobar si hay diferencia entre fechaEstimadaFinInicial y fechaRealFin
         }
         
         double bonusPlanta = 0;
@@ -165,16 +166,16 @@ public class Proyecto {
             //verifica si es de planta y si no tuvo retrasos
             if(e instanceof EmpleadoDePlanta && e.getCantRetrasos() == 0) {
                 double costoTareas = 0;
-                for(Tarea t : this.tareas.values()) {
+                for(Tarea t : this.tareas.values()) {	//suma todas las tareas realizadas por ese mismo responsable
                     if(e.equals(t.getResponsable())) {
                         costoTareas += t.calcularCosto();
                     }
                 }
-                bonusPlanta += costoTareas * 0.02;
+                bonusPlanta += costoTareas * 0.02;	//suma el costo del empleado y si obtuvo su 2%
             }
         }
         
-        double costoIntermedio = costoBase + bonusPlanta;
+        double costoIntermedio = costoBase + bonusPlanta;	//ver cual bonus le corresponde al proyecto (retraso o no)
         
         double bonusGeneral;
         if(huboRetraso) {
@@ -189,7 +190,7 @@ public class Proyecto {
 
     @Override
     public String toString() {
-    	StringBuilder sb = new StringBuilder();	//Pide usar StringBuilder
+    	StringBuilder sb = new StringBuilder();	//pide usar StringBuilder (para utilizar el append)
     	
     	sb.append("PROYECTO N°: ").append(this.numID).append("\n");
         sb.append("DOMICILIO: ").append(this.domicilio).append("\n");

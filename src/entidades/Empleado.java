@@ -17,7 +17,8 @@ public abstract class Empleado {
 		this.cantRetrasos = 0;
 	}
 	
-	//GETTERS
+	//METODOS DE GESTION COMPARTIDA entre EmpleadoContratado y EmpleadoDePlanta
+    // ------------------------------ SET Y SET  ------------------------------ 
 	public String getNombre() {
 		return nombre;
 	}
@@ -34,7 +35,7 @@ public abstract class Empleado {
 		return cantRetrasos;
 	}
 	
-	//METODOS DE GESTION COMPARTIDA entre EmpleadoContratado y EmpleadoDePlanta
+    // ------------------------------ OTROS  ------------------------------ 
 	public void registrarRetraso() {
 		this.cantRetrasos++;
 	}
@@ -50,10 +51,10 @@ public abstract class Empleado {
 	public boolean tieneRetrasos() {
 		return this.cantRetrasos > 0;
 	}
-	
+
 	public abstract double calcularCosto(double cantDias); //en cada tipo de empleado es diferente
 	
-	@Override
+	@Override	//pedido por el enunciado e interfaz
 	public boolean equals(Object o) {
 		//mismo objeto exacto en memoria
 		if (this == o) return true;

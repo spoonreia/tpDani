@@ -10,11 +10,12 @@ public class EmpleadoContratado extends Empleado {
 		this.valorHora = valorHora;
 	}
 	
-	//METODOS DE GESTION
+	//calculo espeficio
 	@Override
 	public double calcularCosto(double cantDias) {
-		//0.5 dias * 8 = 4h
-		//1 dias * 8 == 8h ...
+		//0.5 dia * 8 = 4h
+		//1 dia * 8 == 8h
+		//...
 		return (cantDias * 8) * this.valorHora;
 	}
 }

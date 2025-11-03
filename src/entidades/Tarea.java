@@ -3,16 +3,18 @@ package entidades;
 import java.util.Objects;
 
 public class Tarea {
+	//DATOS
 	private String tituloID;
 	private String descripcion;
 	
 	private double cantDias;
 	private double cantRetrasos;
 	
-	private Empleado responsable; //polimorfismo (empleado contratado o de planta)!!!!!!!!!!!!!!!!!!!!
+	private Empleado responsable;
 	
 	private String estado;
 	
+	//CONSTRUCTOR
 	public Tarea(String tituloID, String descripcion, double cantDias) {
 		this.tituloID = tituloID;
 		this.descripcion = descripcion;
@@ -23,6 +25,8 @@ public class Tarea {
 		this.estado = Estado.pendiente;
 	}
 	
+	
+    // ------------------------------ SET Y SET  ------------------------------ 
 	public String getTituloID() {
 		return tituloID;
 	}
@@ -43,6 +47,8 @@ public class Tarea {
 		return this.cantDias;
 	}
 	
+	
+    // ------------------------------ OTROS  ------------------------------ 
 	public void asignarResponsable(Empleado e) {
 		this.responsable = e;
 		this.estado = Estado.activo;
@@ -72,17 +78,15 @@ public class Tarea {
 		return this.cantRetrasos > 0;
 	}
 	
-	public double calcularCosto() {
+	public double calcularCosto() {	//costo total
 		if(this.responsable == null) {
 			return 0;
 		}
-		
-		//POLIMORFISMO la tarea le pasa al empleado los dias trabajados y calcula dependiendo a que tipo de respondable sea
 		return this.responsable.calcularCosto(this.getDiasTotales());
 	}
 	
 	@Override
-	public String toString() { //pedido por el enunciado
+	public String toString() { //pedido por el enunciado e interfaz
 		return this.tituloID;
 	}
 	
