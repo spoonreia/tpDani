@@ -18,6 +18,7 @@ public class Proyecto {
 	private LocalDate fechaInicio;
 	private LocalDate fechaEstimadaFin;
 	private LocalDate fechaRealFin;
+	private LocalDate fechaEstimadaFinInicial;
 	private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
 	
 	//para buscar tareas en O(1)
@@ -35,6 +36,7 @@ public class Proyecto {
 		
 		this.fechaInicio = LocalDate.parse(inicio, formatter);
 		this.fechaEstimadaFin = LocalDate.parse(fin, formatter);
+		this.fechaEstimadaFinInicial = LocalDate.parse(fin, formatter);
 		this.fechaRealFin = LocalDate.parse(fin, formatter);
 		
 		this.estado = Estado.pendiente;
@@ -142,44 +144,46 @@ public class Proyecto {
     	return this.costoFinal;
     }
     
-    public double calcularCostoTotal() {	//costo total = todas las tareas e incrementos (bonus)
-    	double costoBase = 0;
-    	boolean huboRetraso = false;
-    	
-    	for(Tarea t : this.tareas.values()) {
-    		costoBase += t.calcularCosto(); //POLIMORFISMO usando Empleado.calcularCosto()
-    		if(t.huboRetraso()) {	//pregunta si en la tarea hubo retraso para tenerlo en cuenta en el bonus
-        		huboRetraso = true;
-        	}
-    	}
-    	
-    	double bonusPlanta = 0;
-    	for(Empleado e : this.historialEmpleados) {
-    		//verifica si es de planta y si no tuvo retrasos
-    		if(e instanceof EmpleadoDePlanta && e.getCantRetrasos() == 0) {
-    			double costoTareas = 0;
-    			for(Tarea t : this.tareas.values()) {	//calcula todas las tareas que participo el mismo empleado
-    				if(e.equals(t.getResponsable())) {
-    					costoTareas += t.calcularCosto();
-    				}
-    			}
-    			bonusPlanta += costoTareas * 0.02; //suma el 2%
-    		}
-    	}
-    	
-    	//suma costo con bonus planta
-    	double costoIntermedio = costoBase + bonusPlanta;
-    	
-    	//calcula con el bonus si tiene retrasos o no
-    	double bonusGeneral;
-    	if(huboRetraso) {
-    		bonusGeneral = 0.25; //25%
-    	} else {
-    		bonusGeneral = 0.35; //35%
-    	}
-    	
-    	//costo final
-    	return costoIntermedio + (costoIntermedio * bonusGeneral);
+    public double calcularCostoTotal() {
+        double costoBase = 0;
+        boolean huboRetraso = false;
+                  
+        // Primero verificar si hay retrasos en las tareas
+        for(Tarea t : this.tareas.values()) {
+            costoBase += t.calcularCosto(); //POLIMORFISMO usando Empleado.calcularCosto()
+            if(t.huboRetraso()) {
+                huboRetraso = true;
+            }
+        }
+        
+        if (this.estaFinalizado() && this.fechaRealFin.isAfter(this.fechaEstimadaFinInicial)) {
+            huboRetraso = true;
+        }
+        
+        double bonusPlanta = 0;
+        for(Empleado e : this.historialEmpleados) {
+            //verifica si es de planta y si no tuvo retrasos
+            if(e instanceof EmpleadoDePlanta && e.getCantRetrasos() == 0) {
+                double costoTareas = 0;
+                for(Tarea t : this.tareas.values()) {
+                    if(e.equals(t.getResponsable())) {
+                        costoTareas += t.calcularCosto();
+                    }
+                }
+                bonusPlanta += costoTareas * 0.02;
+            }
+        }
+        
+        double costoIntermedio = costoBase + bonusPlanta;
+        
+        double bonusGeneral;
+        if(huboRetraso) {
+            bonusGeneral = 0.25; //25%
+        } else {
+            bonusGeneral = 0.35; //35%
+        }
+        
+        return costoIntermedio + (costoIntermedio * bonusGeneral);
     }
     
 
