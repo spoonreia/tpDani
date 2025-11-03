@@ -1,5 +1,5 @@
 import entidades.Empleado;
-import entidades.EnpleadoDePlanta;
+import entidades.EmpleadoDePlanta;
 import entidades.HomeSolution;
 import gui.PanelManager;
 
